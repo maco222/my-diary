@@ -1,0 +1,89 @@
+# my-diary configuration
+# Copy to config.yaml and adjust to your setup:
+#   cp config.yaml.example config.yaml
+
+collectors:
+  local_git:
+    enabled: true
+    scan_paths:
+      - ~/projects
+    author_email: ""  # your git email
+
+  terminal:
+    enabled: true
+    history_file: ~/.zsh_history
+    boring_commands:
+      - ls
+      - cd
+      - clear
+      - pwd
+      - exit
+      - history
+      - which
+      - echo
+      - cat
+      - less
+      - man
+      - help
+
+  filesystem:
+    enabled: true
+    scan_paths:
+      - ~/projects
+      - ~/Documents
+    exclude_patterns:
+      - node_modules
+      - .git
+      - __pycache__
+      - .venv
+      - .cache
+      - .tox
+      - dist
+      - build
+      - "*.egg-info"
+
+  weather:
+    enabled: true
+    city: Warsaw
+    # latitude: 52.23
+    # longitude: 21.01
+
+  gitlab:
+    enabled: true
+
+  linear:
+    enabled: true
+
+  notion:
+    enabled: true
+
+  slack:
+    enabled: true
+
+  google_cal:
+    enabled: true
+
+  google_drive:
+    enabled: true
+
+  gmail:
+    enabled: true
+
+synthesis:
+  model: sonnet
+  language: pl
+  user_name: ""  # your first name (used in AI prompts)
+
+writers:
+  markdown:
+    enabled: true
+    output_dir: ./output
+
+  obsidian:
+    enabled: true
+    vault_path: ""  # e.g. ~/Documents/Obsidian Vault
+    daily_subdir: Daily
+
+  notion:
+    enabled: true
+    database_id: ""  # from Notion URL: notion.so/workspace/DATABASE_ID?v=...

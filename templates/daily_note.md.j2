@@ -1,0 +1,57 @@
+# Dziennik — {{ target_date }} ({{ weekday }})
+
+## TL;DR
+{{ entry.tldr }}
+
+{% if entry.key_decisions %}
+## Kluczowe decyzje i ustalenia
+{% for decision in entry.key_decisions %}
+- {{ decision }}
+{% endfor %}
+{% endif %}
+
+{% if entry.development_narrative %}
+## Development
+{{ entry.development_narrative }}
+{% endif %}
+
+{% if entry.tasks_narrative %}
+## Zadania (Linear)
+{{ entry.tasks_narrative }}
+{% endif %}
+
+{% if entry.documents_narrative %}
+## Dokumentacja (Notion / Google Drive)
+{{ entry.documents_narrative }}
+{% endif %}
+
+{% if entry.communication_narrative %}
+## Komunikacja (Slack)
+{{ entry.communication_narrative }}
+{% endif %}
+
+{% if entry.meetings_narrative %}
+## Spotkania (Calendar)
+{{ entry.meetings_narrative }}
+{% endif %}
+
+{% if entry.local_activity_narrative %}
+## Aktywność lokalna
+{{ entry.local_activity_narrative }}
+{% endif %}
+
+{% if weather %}
+## Kontekst dnia
+### Pogoda
+{{ weather.city }}: {{ weather.temp_c }}°C, {{ weather.description }}
+{% endif %}
+
+{% if entry.action_items %}
+## Action items i follow-upy
+{% for item in entry.action_items %}
+- [ ] {{ item }}
+{% endfor %}
+{% endif %}
+
+---
+*Wygenerowano automatycznie przez my-diary*
