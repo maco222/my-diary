@@ -22,6 +22,7 @@ _COLLECTOR_MAP: dict[str, str] = {
     "google_cal": "my_diary.collectors.google_cal.GoogleCalendarCollector",
     "google_drive": "my_diary.collectors.google_drive.GoogleDriveCollector",
     "gmail": "my_diary.collectors.gmail.GmailCollector",
+    "obsidian_note": "my_diary.collectors.obsidian_note.ObsidianNoteCollector",
 }
 
 

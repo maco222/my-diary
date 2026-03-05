@@ -18,6 +18,10 @@ google_token.json
 # Output
 output/
 
+# Session exports (contain private data)
+conversation_export.md
+export_conversation.py
+
 # IDE
 .idea/
 .vscode/

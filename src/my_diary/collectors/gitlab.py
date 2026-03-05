@@ -5,6 +5,7 @@ from __future__ import annotations
 import asyncio
 import json
 from datetime import timedelta
+from urllib.parse import urlencode
 
 from my_diary.collectors.base import BaseCollector
 from my_diary.models import CollectorResult
@@ -39,11 +40,18 @@ class GitLabCollector(BaseCollector):
         )
 
     async def _glab_api(self, endpoint: str, params: dict | None = None) -> list | dict:
-        """Call glab api and return parsed JSON."""
-        args = ["glab", "api", endpoint]
+        """Call glab api and return parsed JSON.
+
+        glab api with relative paths (e.g. /events) resolves against the
+        current project context, which fails for user-level endpoints.
+        We build full URLs with query params embedded (--field/-f forces POST).
+        """
+        host = await self._get_host()
+        url = f"https://{host}/api/v4{endpoint}"
         if params:
-            for k, v in params.items():
-                args.extend(["-f", f"{k}={v}"])
+            url = f"{url}?{urlencode(params)}"
+
+        args = ["glab", "api", url]
 
         proc = await asyncio.create_subprocess_exec(
             *args,
@@ -114,6 +122,18 @@ class GitLabCollector(BaseCollector):
             return [self._parse_mr(mr) for mr in raw]
         except Exception:
             return []
+
+    async def _get_host(self) -> str:
+        """Get the configured GitLab host (cached)."""
+        if not hasattr(self, "_host"):
+            proc = await asyncio.create_subprocess_exec(
+                "glab", "config", "get", "host",
+                stdout=asyncio.subprocess.PIPE,
+                stderr=asyncio.subprocess.PIPE,
+            )
+            stdout, _ = await proc.communicate()
+            self._host = stdout.decode().strip() if proc.returncode == 0 and stdout.strip() else "gitlab.com"
+        return self._host
 
     async def _get_username(self) -> str:
         """Get current GitLab username."""

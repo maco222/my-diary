@@ -1,1 +1,1 @@
-"""my-diary — Automatyczny skryba dzienny."""
+"""my-diary — Automated daily scribe."""

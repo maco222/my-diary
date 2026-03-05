@@ -45,6 +45,11 @@ def get_google_credentials():
     if not _CREDENTIALS_PATH.exists():
         return None
 
+    # Only run interactive OAuth flow if we have a TTY (not in systemd/cron)
+    import sys
+    if not sys.stdin.isatty():
+        return None
+
     from google_auth_oauthlib.flow import InstalledAppFlow
 
     flow = InstalledAppFlow.from_client_secrets_file(str(_CREDENTIALS_PATH), scopes)

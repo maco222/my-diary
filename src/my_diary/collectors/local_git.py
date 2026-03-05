@@ -52,7 +52,9 @@ class LocalGitCollector(BaseCollector):
     ) -> dict | None:
         args = ["git", "-C", str(repo_path), "log"]
         if author_email:
-            args.append(f"--author={author_email}")
+            # Support multiple emails separated by comma — git --author takes regex
+            pattern = r"\|".join(e.strip() for e in author_email.split(","))
+            args.append(f"--author={pattern}")
         args.extend([
             f"--after={date_str}T00:00:00",
             f"--before={date_str}T23:59:59",

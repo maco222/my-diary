@@ -49,6 +49,13 @@ class GoogleCalendarCollector(BaseCollector):
             end = event.get("end", {})
             attendees = event.get("attendees", [])
 
+            # Find my response status (accepted/declined/tentative/needsAction)
+            my_status = ""
+            for a in attendees:
+                if a.get("self", False):
+                    my_status = a.get("responseStatus", "")
+                    break
+
             events.append({
                 "summary": event.get("summary", "(no title)"),
                 "start": start.get("dateTime", start.get("date", "")),
@@ -57,6 +64,7 @@ class GoogleCalendarCollector(BaseCollector):
                     a.get("email", "") for a in attendees if not a.get("self", False)
                 ],
                 "attendee_count": len(attendees),
+                "my_response": my_status,
                 "description": (event.get("description", "") or "")[:200],
                 "location": event.get("location", ""),
                 "hangout_link": event.get("hangoutLink", ""),

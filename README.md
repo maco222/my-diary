@@ -1,11 +1,11 @@
 # my-diary
 
-Automatyczny skryba dzienny — zbiera aktywność z wielu źródeł, syntetyzuje spójną notatkę za pomocą Claude i zapisuje ją w trzech miejscach.
+Automated daily scribe — collects activity from multiple sources, synthesizes a coherent diary entry using Claude, and saves it in three places.
 
-## Jak działa
+## How it works
 
 ```
-Collectors (async, parallel)  →  Claude CLI (synteza AI)  →  Writers (parallel)
+Collectors (async, parallel)  →  Claude CLI (AI synthesis)  →  Writers (parallel)
 ├── Linear                                                    ├── output/*.md
 ├── GitLab                                                    ├── Obsidian vault
 ├── Notion                                                    └── Notion database
@@ -13,36 +13,36 @@ Collectors (async, parallel)  →  Claude CLI (synteza AI)  →  Writers (parall
 ├── Gmail
 ├── Google Calendar
 ├── Google Drive
-├── Local Git (wszystkie repo)
+├── Local Git (all repos)
 ├── Terminal (~/.zsh_history)
-├── Filesystem (zmienione pliki)
+├── Filesystem (changed files)
 └── Weather (Open-Meteo)
 ```
 
-Graceful degradation — jeśli collector/writer padnie, reszta działa dalej.
+Graceful degradation — if a collector/writer fails, the rest keep running.
 
-## Szybki start
+## Quick start
 
 ```bash
-# Instalacja
+# Install
 uv sync
 
-# Dry-run (zbiera dane, drukuje surowy output, bez AI)
+# Dry-run (collect data, print raw output, no AI)
 uv run python -m my_diary --dry-run
 
-# Pełne uruchomienie
+# Full run
 uv run python -m my_diary
 
-# Konkretna data
+# Specific date
 uv run python -m my_diary --date 2026-03-02
 
-# Tylko wybrane collectory
+# Only selected collectors
 uv run python -m my_diary --dry-run --collectors local_git,terminal,weather
 
-# Tylko wybrane writery
+# Only selected writers
 uv run python -m my_diary --writers markdown,obsidian
 
-# Retry writerów (bez ponownego zbierania danych i syntezy AI)
+# Retry writers (skip data collection and AI synthesis)
 uv run python -m my_diary --retry-writers
 uv run python -m my_diary --retry-writers --writers notion
 
@@ -50,78 +50,78 @@ uv run python -m my_diary --retry-writers --writers notion
 uv run python -m my_diary --verbose
 ```
 
-## Konfiguracja
+## Configuration
 
-### Sekrety (`.env`)
+### Secrets (`.env`)
 
-Skopiuj `.env.example` → `.env` i uzupełnij:
+Copy `.env.example` → `.env` and fill in:
 
 ```bash
 cp .env.example .env
 ```
 
-| Zmienna | Skąd pobrać |
-|---------|-------------|
+| Variable | Where to get it |
+|----------|-----------------|
 | `LINEAR_API_KEY` | https://linear.app/settings/api → Personal API keys |
-| `SLACK_USER_TOKEN` | Slack App z User Token (patrz niżej) |
+| `SLACK_USER_TOKEN` | Slack App with User Token (see below) |
 | `NOTION_API_TOKEN` | https://www.notion.so/profile/integrations → Internal integration |
 
 ### Config (`config.yaml`)
 
-Jeden plik z konfiguracją collectorów, writerów i syntezy. Poszczególne collectory/writery można wyłączyć ustawiając `enabled: false`.
+Single file configuring collectors, writers, and synthesis. Individual collectors/writers can be disabled by setting `enabled: false`.
 
-## Setup poszczególnych serwisów
+## Service setup
 
 ### Slack
 
-1. Wejdź na https://api.slack.com/apps → **Create New App** → From scratch
-2. **OAuth & Permissions** → User Token Scopes, dodaj:
-   - `search:read` (wymagane)
-   - `channels:history`, `channels:read` (kanały publiczne)
-   - `groups:history`, `groups:read` (kanały prywatne)
-   - `im:history`, `im:read` (DM)
-   - `mpim:history`, `mpim:read` (grupowe DM)
-   - `users:read` (resolving nazw)
-3. **Install to Workspace** → skopiuj **User OAuth Token** (`xoxp-...`)
-4. Wklej do `.env` → `SLACK_USER_TOKEN`
+1. Go to https://api.slack.com/apps → **Create New App** → From scratch
+2. **OAuth & Permissions** → User Token Scopes, add:
+   - `search:read` (required)
+   - `channels:history`, `channels:read` (public channels)
+   - `groups:history`, `groups:read` (private channels)
+   - `im:history`, `im:read` (DMs)
+   - `mpim:history`, `mpim:read` (group DMs)
+   - `users:read` (name resolution)
+3. **Install to Workspace** → copy **User OAuth Token** (`xoxp-...`)
+4. Paste into `.env` → `SLACK_USER_TOKEN`
 
-Minimum na start: `search:read` — wystarczy do działania collectora.
+Minimum to get started: `search:read` — enough for the collector to work.
 
 ### Google (Calendar, Drive, Gmail)
 
-1. https://console.cloud.google.com/ → utwórz projekt (np. `my-diary`)
-2. **APIs & Services → Library** → włącz:
+1. https://console.cloud.google.com/ → create a project (e.g. `my-diary`)
+2. **APIs & Services → Library** → enable:
    - Google Calendar API
    - Google Drive API
    - Gmail API
 3. **OAuth consent screen**:
    - User type: External
    - Scopes: `calendar.readonly`, `drive.readonly`, `gmail.readonly`
-   - Test users: dodaj swój email
+   - Test users: add your email
 4. **Credentials → Create → OAuth client ID** → Desktop app → **Download JSON**
-5. Umieść plik w katalogu projektu:
+5. Place the file in the project directory:
    ```bash
    cp ~/Downloads/client_secret_*.json google_credentials.json
    ```
-6. Pierwsze uruchomienie otworzy przeglądarkę do autoryzacji:
+6. First run will open a browser for authorization:
    ```bash
    uv run python -m my_diary --dry-run --collectors google_cal,google_drive,gmail
    ```
-   Token zapisze się jako `google_token.json` — kolejne uruchomienia są automatyczne.
-   Jeśli dodajesz nowy scope, usuń stary token: `rm google_token.json`
+   Token is saved as `google_token.json` — subsequent runs are automatic.
+   If adding a new scope, delete the old token: `rm google_token.json`
 
 ### Notion
 
-1. https://www.notion.so/profile/integrations → utwórz Internal Integration
-2. Skopiuj token → `.env` → `NOTION_API_TOKEN`
-3. W Notion: wejdź w stronę/bazę → **...** → **Connections** → dodaj swoją integration
-4. **Writer**: utwórz bazę danych "Daily Diary" (kolumny Name/title wystarczy — brakujące Date i Tags zostaną dodane automatycznie)
-5. Skopiuj ID bazy z URL — to pierwsza część ścieżki, **nie** parametr `v=`:
+1. https://www.notion.so/profile/integrations → create an Internal Integration
+2. Copy token → `.env` → `NOTION_API_TOKEN`
+3. In Notion: go to a page/database → **...** → **Connections** → add your integration
+4. **Writer**: create a "Daily Diary" database (Name/title column is enough — missing Date and Tags columns will be added automatically)
+5. Copy the database ID from the URL — it's the first part of the path, **not** the `v=` parameter:
    ```
    https://www.notion.so/workspace/XXXXXXX?v=YYYYYYY
-                                  ^^^^^^^^ to jest database_id
+                                  ^^^^^^^^ this is the database_id
    ```
-   Wklej do `config.yaml`:
+   Paste into `config.yaml`:
    ```yaml
    writers:
      notion:
@@ -130,59 +130,59 @@ Minimum na start: `search:read` — wystarczy do działania collectora.
 
 ### Linear
 
-1. https://linear.app/settings/api → **Personal API keys** → utwórz klucz
-2. Wklej do `.env` → `LINEAR_API_KEY`
+1. https://linear.app/settings/api → **Personal API keys** → create a key
+2. Paste into `.env` → `LINEAR_API_KEY`
 
 ### GitLab
 
-Wymaga zainstalowanego i zalogowanego `glab` CLI:
+Requires `glab` CLI installed and authenticated:
 ```bash
 glab auth login
 ```
 
-## Logika re-run
+## Re-run logic
 
-Ponowne uruchomienie dla tej samej daty **aktualizuje** istniejące notatki:
+Re-running for the same date **updates** existing notes:
 
-| Writer | Re-run |
-|--------|--------|
-| **Markdown** | Nadpisuje plik |
-| **Obsidian** | Podmienia sekcję auto-generated (markery `%% AUTO-GENERATED-START/END %%`), ręczne notatki poza markerami nietknięte |
-| **Notion** | Jeśli auto-generated strona → kasuje bloki i wstawia nowe. Jeśli ręczna strona → dopisuje na końcu |
+| Writer | Re-run behavior |
+|--------|-----------------|
+| **Markdown** | Overwrites the file |
+| **Obsidian** | Replaces the auto-generated section (between `%% AUTO-GENERATED-START/END %%` markers), manual notes outside markers are preserved |
+| **Notion** | If auto-generated page → deletes blocks and inserts new ones. If manual page → appends at the end |
 
-`--retry-writers` pozwala ponowić zapis bez ponownego zbierania danych i syntezy AI (korzysta z cache w `output/.cache/`).
+`--retry-writers` lets you re-run writers without re-collecting data or re-running AI synthesis (uses cache from `output/.cache/`).
 
 ## Scheduling (systemd timer)
 
-Automatyczne uruchamianie codziennie o 23:00 (`Persistent=true` — jeśli komputer był wyłączony, uruchomi się przy następnym starcie):
+Automatic daily run at 23:00 (`Persistent=true` — if the computer was off, it runs on next boot):
 
 ```bash
 ./scheduling/install.sh
 ```
 
-Sprawdzenie statusu:
+Check status:
 ```bash
 systemctl --user status my-diary.timer
 journalctl --user -u my-diary.service -n 50
 ```
 
-## Synteza AI
+## AI synthesis
 
-Używa `claude -p` CLI w trybie non-interactive (korzysta z istniejącej subskrypcji Claude, bez dodatkowych kosztów). Prompt nakazuje pisać po polsku, bazować wyłącznie na dostarczonych danych i zwracać strukturalny JSON.
+Uses `claude -p` CLI in non-interactive mode (uses existing Claude subscription, no additional costs). The prompt instructs the model to write in Polish, rely solely on provided data, and return structured JSON.
 
-## Struktura projektu
+## Project structure
 
 ```
 src/my_diary/
 ├── cli.py                  # --date, --dry-run, --collectors, --writers, --retry-writers, --verbose
 ├── config.py               # YAML + .env (pydantic-settings)
 ├── models.py               # CollectorResult, DiaryEntry, PipelineResult
-├── pipeline.py             # Orkiestrator: collect → synthesize → write (+ cache)
-├── collectors/             # 11 collectorów (async, parallel)
-│   ├── base.py             # ABC z safe_collect() (graceful degradation)
-│   ├── local_git.py        # git log we wszystkich lokalnych repo
+├── pipeline.py             # Orchestrator: collect → synthesize → write (+ cache)
+├── collectors/             # 11 collectors (async, parallel)
+│   ├── base.py             # ABC with safe_collect() (graceful degradation)
+│   ├── local_git.py        # git log across all local repos
 │   ├── terminal.py         # ~/.zsh_history
-│   ├── filesystem.py       # Zmienione pliki
+│   ├── filesystem.py       # Changed files
 │   ├── weather.py          # Open-Meteo API
 │   ├── gitlab.py           # glab api subprocess
 │   ├── linear.py           # GraphQL API
@@ -192,7 +192,7 @@ src/my_diary/
 │   ├── google_cal.py       # Calendar API v3
 │   └── google_drive.py     # Drive API v3
 ├── synthesis/
-│   ├── engine.py           # Wywołanie claude -p CLI
+│   ├── engine.py           # claude -p CLI invocation
 │   └── prompts.py          # System/user prompt templates
 ├── writers/
 │   ├── base.py             # ABC

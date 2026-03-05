@@ -69,6 +69,11 @@ collectors:
   gmail:
     enabled: true
 
+  obsidian_note:
+    enabled: true
+    vault_path: ""  # same as writers.obsidian.vault_path
+    daily_subdir: Daily
+
 synthesis:
   model: sonnet
   language: pl

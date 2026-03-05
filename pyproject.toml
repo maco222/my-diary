@@ -1,7 +1,7 @@
 [project]
 name = "my-diary"
 version = "0.1.0"
-description = "Automatyczny skryba dzienny — zbiera aktywność z wielu źródeł i syntetyzuje dzienną notatkę"
+description = "Automated daily scribe — collects activity from multiple sources and synthesizes a daily diary entry"
 readme = "README.md"
 authors = [
     { name = "Maciej Kobuszewski", email = "maciej.kobuszewski@gmail.com" }
